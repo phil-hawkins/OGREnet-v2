@@ -1,0 +1,333 @@
+{
+	"_Select": {
+		"symbol": "_Select",
+        "expansion": [
+			["_NoHop"],
+		    ["_PrefixSingular",	"the", "_RelatedObject"],
+		    ["_PrefixSingular",	"the", "_RelatedLocation"],
+		    ["_PrefixSingular",	"the", "_DistanceObjectandLocation"],
+		    ["_PrefixSingular",	"the", "_DistanceBetweenObjects"],
+            ["_PrefixSingular",	"the", "_BetweenObject"]
+        ],
+		"filtertype": "pass_through",
+		"min": null,
+		"max": null,
+		"passThroughSymbolSelection": -1,
+		"tags": ""
+	},
+	"_NoHop": {
+		"symbol": "_NoHop",
+        "expansion": [
+            ["_PrefixSingular", "the", "_SceneObject"],
+          	["the",	"_SceneObject"],
+		    ["_PrefixPlural", "the", "_SceneObjects"],
+		    ["the",	"_SceneObjects"]
+        ],
+		"filtertype": "pass_through",
+		"passThroughSymbolSelection": -1,
+		"tags": "no_hop"		
+	},
+	"_PrefixSingular": {
+		"symbol": "_PrefixSingular",
+		"expansion": [
+			["select"]
+		],
+		"filtertype": null,
+		"min": null,
+		"max": null,
+		"tags": ""
+	},
+	"_PrefixPlural": {
+		"symbol": "_PrefixPlural",
+		"expansion": [
+			["select"]
+		],
+		"filtertype": null,
+		"min": null,
+		"max": null,
+		"tags": ""
+	},
+	"_BetweenObject": {
+		"symbol": "_BetweenObject",
+        "expansion": [["_SceneObjectSet", "between", "_theSceneObject",	"and", "_theSceneObject"]],
+		"filtertype": "between",
+		"min": 1,
+		"max": 1,
+		"tags": "ternary_predicate one_hop between"
+	},
+	"_BetweenObjectandLocation": {
+		"symbol": "_BetweenObjectandLocation",
+		"expansion": [["_SceneObjectSet", "between", "_theSceneObject",	"and", "_theLocation"]],
+		"filtertype": "between",
+		"min": 1,
+		"max": 1,
+		"tags": "ternary_predicate one_hop between"
+	},
+	"_DistanceObjectandLocation": {
+		"symbol": "_DistanceObjectandLocation",
+		"expansion": [["_SceneObjectSet", "_DistanceRelation", "_theLocation"]],
+		"filtertype": "scene_compare",
+		"min": 1,
+		"max": 1,
+		"tags": "one_hop distance"
+	},
+	"_DistanceBetweenObjects": {
+		"symbol": "_DistanceBetweenObjects",
+		"expansion": [["_SceneObjectSet", "_DistanceRelation", "_theSceneObject"]],
+		"filtertype": "scene_compare",
+		"min": 1,
+		"max": 1,
+		"tags": "one_hop"
+	},
+	"_theLocation": {
+		"symbol": "_theLocation",
+		"expansion": [["the", "_Location", "of", "the",	"table"]],
+		"filtertype": "pass_through",
+		"min": null,
+		"max": null,
+		"passThroughSymbolSelection": 1,
+		"tags": ""
+	},
+	"_RelatedObject": {
+		"symbol": "_RelatedObject",
+		"expansion": [["_SceneObjectSet", "_Relation", "_theSceneObject"]],
+		"filtertype": "binary_compare",
+		"min": 1,
+		"max": 1,
+		"tags": "binary_predicate one_hop"
+	},
+	"_RelatedLocation": {
+		"symbol": "_RelatedLocation",
+		"expansion": [["_SceneObjectSet", "_RotationalRelation", "_theLocation"]],
+		"filtertype": "binary_compare",
+		"min": 1,
+		"max": 1,
+		"tags": "binary_predicate one_hop"
+	},
+	"_theSceneObject": {
+		"symbol": "_theSceneObject",
+		"expansion": [["the", "_SceneObject"]],
+		"filtertype": "pass_through",
+		"min": null,
+		"max": null,
+		"passThroughSymbolSelection": -1,
+		"tags": ""
+	},
+	"_Relation": {
+		"symbol": "_Relation",
+		"expansion": [
+            ["_DirectionalRelation"],
+			["_RotationalRelation"],
+			["_Near"]
+        ]
+	},
+	"_DirectionalRelation": {
+		"symbol": "_DirectionalRelation",
+		"expansion": [
+            ["_Left"],
+		    ["_Right"],
+		    ["_Above"],
+            ["_Below"]
+        ],
+		"tags": "direction"
+	},
+	"_Left": {
+		"symbol": "_Left",
+		"expansion": [
+			["left of"],
+			["to the left of"]
+		],
+		"canonical_text": "left"
+	},
+	"_Right": {
+		"symbol": "_Right",
+		"expansion": [
+			["right of"],
+			["to the right of"]
+		],
+		"canonical_text": "right"
+	},
+	"_Above": {
+		"symbol": "_Above",
+		"expansion": [["above"]],
+		"canonical_text": "above"
+	},
+	"_Below": {
+		"symbol": "_Below",
+		"expansion": [["below"]],
+		"canonical_text": "below"
+	},
+	"_Near": {
+		"symbol": "_Near",
+		"expansion": [["near"]],
+		"canonical_text": "near",
+		"tags": "near"
+	},
+	"_RotationalRelation": {
+		"symbol": "_RotationalRelation",
+		"expansion": [
+            ["_Parallel"],
+            ["_Orthogonal"]
+		],
+		"tags": "rotation"
+	},
+	"_Parallel": {
+		"symbol": "_Parallel",
+		"expansion": [["parallel with"]],
+		"canonical_text": "parallel"
+	},
+	"_Orthogonal": {
+		"symbol": "_Orthogonal",
+		"expansion": [["orthogonal to"]],
+		"canonical_text": "orthogonal"
+	},
+	"_DistanceRelation": {
+		"symbol": "_DistanceRelation",
+		"expansion": [
+            ["_Nearest"],
+            ["_Furthest"]
+        ],
+		"tags": "distance"
+	},
+	"_Nearest": {
+		"symbol": "_Nearest",
+		"expansion": [["nearest to"]],
+		"canonical_text": "nearest"
+	},
+	"_Furthest": {
+		"symbol": "_Furthest",
+		"expansion": [["furthest from"]],
+		"canonical_text": "furthest"
+	},
+	"_Location": {
+		"symbol": "_Location",
+		"expansion": [
+            ["_LeftEdge"],
+    		["_RightEdge"],
+	    	["_TopEdge"],
+		    ["_BottomEdge"],
+            ["_Center"]
+        ],
+		"filtertype": "scene",
+		"min": 1,
+		"max": 1,
+		"tags": "location"
+	},
+	"_LeftEdge": {
+		"symbol": "_LeftEdge",
+		"expansion": [["left edge"]],
+		"canonical_text": "left edge"
+	},
+	"_RightEdge": {
+		"symbol": "_RightEdge",
+		"expansion": [["right edge"]],
+		"canonical_text": "right edge"
+	},
+	"_TopEdge": {
+		"symbol": "_TopEdge",
+		"expansion": [["top edge"]],
+		"canonical_text": "top edge"
+	},
+	"_BottomEdge": {
+		"symbol": "_BottomEdge",
+		"expansion": [["bottom edge"]],
+		"canonical_text": "bottom edge"
+	},
+	"_Center": {
+		"symbol": "_Center",
+		"expansion": [["center"]],
+		"canonical_text": "center"
+	},
+	"_SceneObject": {
+		"symbol": "_SceneObject",
+		"expansion": [
+            ["_Fork"],
+    		["_Spoon"],
+	    	["_Knife"],
+		    ["_Cup"],
+            ["_Plate"]
+        ],
+		"filtertype": "scene",
+		"min": 1,
+		"max": 1,
+		"tags": "mobile_object"
+	},
+	"_SceneObjects": {
+		"symbol": "_SceneObjects",
+		"expansion": [
+            ["_Forks"],
+    		["_Spoons"],
+	    	["_Knives"],
+		    ["_Cups"],
+            ["_Plates"]
+        ],
+		"filtertype": "scene",
+		"min": 2,
+		"max": null,
+		"tags": "mobile_object"
+	},
+	"_SceneObjectSet": {
+		"symbol": "_SceneObjectSet",
+		"expansion": [
+            ["_Fork"],
+		    ["_Spoon"],
+    		["_Knife"],
+	    	["_Cup"],
+            ["_Plate"]
+        ],
+		"filtertype": "scene",
+		"min": 1,
+		"max": null,
+		"tags": "mobile_object"
+	},
+	"_Fork": {
+		"symbol": "_Fork",
+		"expansion": [["fork"]],
+		"canonical_text": "fork"
+	},
+	"_Spoon": {
+		"symbol": "_Spoon",
+		"expansion": [["spoon"]],
+		"canonical_text": "spoon"
+	},
+	"_Knife": {
+		"symbol": "_Knife",
+		"expansion": [["knife"]],
+		"canonical_text": "knife"
+	},
+	"_Cup": {
+		"symbol": "_Cup",
+		"expansion": [["cup"]],
+		"canonical_text": "cup"
+	},
+	"_Plate": {
+		"symbol": "_Plate",
+		"expansion": [["plate"]],
+		"canonical_text": "plate"
+	},
+	"_Forks": {
+		"symbol": "_Forks",
+		"expansion": [["forks"]],
+		"canonical_text": "fork"
+	},
+	"_Spoons": {
+		"symbol": "_Spoons",
+		"expansion": [["spoons"]],
+		"canonical_text": "spoon"
+	},
+	"_Knives": {
+		"symbol": "_Knives",
+		"expansion": [["knives"]],
+		"canonical_text": "knife"
+	},
+	"_Cups": {
+		"symbol": "_Cups",
+		"expansion": [["cups"]],
+		"canonical_text": "cup"
+	},
+	"_Plates": {
+		"symbol": "_Plates",
+		"expansion": [["plates"]],
+		"canonical_text": "plate"
+	}
+}

@@ -1,0 +1,6 @@
+nlp/*
+.pytest_cache/*
+__pycache__/*
+trials/__pycache__/*
+*.pyc
+trials/*
