@@ -1,0 +1,3 @@
+[submodule "nlp/InferSent"]
+	path = nlp/InferSent
+	url = https://github.com/phil-hawkins/InferSent
