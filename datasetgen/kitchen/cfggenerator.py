@@ -1,7 +1,7 @@
 import json
 import copy
 
-from scene import Scene, SceneObject
+from .scene import Scene, SceneObject
 
 # Selection: holds the set of terminal symbols produced by production rules
 # and a list of indexes of scene objects that matches the text

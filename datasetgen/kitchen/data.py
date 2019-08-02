@@ -10,8 +10,8 @@ import random
 import json
 
 from nlp.InferSent.models import InferSent
-from scene import SceneObject, Scene
-from cfggenerator import CFGGenerator, ProductionRule, Selection
+from .scene import SceneObject, Scene
+from .cfggenerator import CFGGenerator, ProductionRule, Selection
 
 class Config():
     IMAGE_WIDTH = 512
@@ -65,6 +65,16 @@ class Config():
     }
     W2V_PATH = 'nlp/fastText/crawl-300d-2M.vec'
 
+    def __init__(self):
+        with open(self.prod_rule_path, 'r') as prfile:
+            self.production_rules = json.load(fp=prfile, object_hook=ProductionRule.from_dict) 
+        self.vocab = []
+        for pr in self.production_rules.values():
+            for ex in pr.expansion:
+                for s in ex:
+                    if isinstance(s, str) and (s[0] != '_'):
+                        self.vocab.append(s)
+
 def generate_scene(config):
     retrys = 10
     scene = None
@@ -111,8 +121,8 @@ def extract_scene_graph(scene, config):
 
 
 
-def generate_examples(config, scene, production_rules, max_instances=None, tag_filter=None):
-    gen = CFGGenerator(scene, production_rules)
+def generate_examples(config, scene, max_instances=None, tag_filter=None):
+    gen = CFGGenerator(scene, config.production_rules)
     selections = gen.expand_symbol('_Select')
     
     # if a filter is set, only include selections with all those tags
@@ -137,12 +147,12 @@ def generate_examples(config, scene, production_rules, max_instances=None, tag_f
 
     return examples
 
-def gen_data_batch(config, production_rules, encode_fn, batch_sz=32):
+def gen_data_batch(config, encode_fn, batch_sz=32):
     # genrate examples
     examples = []
     while len(examples) < batch_sz:
         scene = generate_scene(config)
-        examples += generate_examples(config, scene, production_rules, max_instances=batch_sz-len(examples))
+        examples += generate_examples(config, scene, max_instances=batch_sz-len(examples))
 
     # encode sentences
     encoded_selections = encode_fn([ex.selection for ex in examples])
@@ -155,23 +165,15 @@ def gen_data_batch(config, production_rules, encode_fn, batch_sz=32):
     return Batch.from_data_list(examples)
     
 
+
+''' Example data batch generation
 config = Config()
-with open(config.prod_rule_path, 'r') as prfile:
-    production_rules = json.load(fp=prfile, object_hook=ProductionRule.from_dict) 
-vocab = []
-for pr in production_rules.values():
-    for ex in pr.expansion:
-        for s in ex:
-            if isinstance(s, str) and (s[0] != '_'):
-                vocab.append(s)
+SceneObject.class_init(config)
 
 infersent = InferSent(config.params_model)
 infersent.load_state_dict(torch.load(config.MODEL_PATH))
 infersent.set_w2v_path(config.W2V_PATH)
-infersent.build_vocab(vocab, tokenize=True)
- 
-SceneObject.class_init(config)
-gen_data_batch(config=config, production_rules=production_rules, encode_fn=infersent.encode)
+infersent.build_vocab(config.vocab, tokenize=True)
 
-
-
+gen_data_batch(config=config, encode_fn=infersent.encode)
+'''
