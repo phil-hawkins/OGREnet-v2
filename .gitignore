@@ -1,6 +1,11 @@
-nlp/*
 .pytest_cache/*
 __pycache__/*
 trials/__pycache__/*
 *.pyc
 trials/*
+nlp/glove/*
+nlp/fastText/*
+nlp/encoder/*
+nlp/nlp.py
+nlp/glove_load.py
+nlp/glove_text.py
