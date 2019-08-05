@@ -67,17 +67,12 @@ def main(_argv):
             meter = Meter()
 
 
-    # evaluation
-    # model.eval()
-    # acc = 0.
-    # for batch in range(FLAGS.eval_batches):
-    #     data = gen_data_batch(config=config, encode_fn=infersent.encode).to(device)
-    #     pred = model(data)
-    #     pred[pred >= .5] = 1.
-    #     pred[pred < .5] = 0.
-    #     acc += (accuracy(pred, data.y) / FLAGS.eval_batches)
-    # logging.info('Accuracy: {:.4f}'.format(acc))
-
+    torch.save({
+        'epoch': batch,
+        'model_state_dict': model.state_dict(),
+        'optimizer_state_dict': optimizer.state_dict(),
+        'loss': loss
+        }, "./logs/{}/{}.chk".format(FLAGS.job_id, batch))
 
 
 
