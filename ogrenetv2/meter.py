@@ -24,12 +24,10 @@ class Meter(object):
         return (self.cum_true_pos + self.cum_true_neg) / self.examples
 
     def precision(self):
-        out = self.cum_true_pos / (self.cum_true_pos + self.cum_false_pos)
-        return out / self.examples
+        return self.cum_true_pos / (self.cum_true_pos + self.cum_false_pos)
 
     def recall(self):
-        out = self.cum_true_pos / (self.cum_true_pos + self.cum_false_neg)
-        return out / self.examples
+        return self.cum_true_pos / (self.cum_true_pos + self.cum_false_neg)
 
     def loss(self):
         return self.cum_loss / self.examples
