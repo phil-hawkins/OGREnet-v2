@@ -53,17 +53,18 @@ def main(_argv):
         loss = loss_fn(out, data.y)
         loss.backward()
         optimizer.step()
-        meter.add_batch_results(out, data.y, loss)
+        meter.add_batch_results(out, data.y, loss, data.batch)
 
         # log metrics to tensorboard
         if (batch > 0) and (batch % FLAGS.log_step == 0):
-            logging.info("Batch: {}/{} loss:{}, acc:{}, prec:{}, rec:{}".format(
+            logging.info("Batch: {}/{} loss:{}, acc:{}, prec:{}, rec:{}, top1:{}".format(
                 batch, FLAGS.train_batches, 
-                meter.loss(), meter.accuracy(), meter.precision(), meter.recall()))
+                meter.loss(), meter.accuracy(), meter.precision(), meter.recall(), meter.top1_precision()))
             writer.add_scalar("loss", meter.loss(), global_step=batch)
             writer.add_scalar("accuracy", meter.accuracy(), global_step=batch)
             writer.add_scalar("precision", meter.precision(), global_step=batch)
             writer.add_scalar("recall", meter.recall(), global_step=batch)
+            writer.add_scalar("top1_precision", meter.top1_precision(), global_step=batch)
             meter = Meter()
 
 

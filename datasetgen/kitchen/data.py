@@ -103,7 +103,7 @@ def fully_connect(node_count):
     edge_index, _ = remove_self_loops(edge_index)
     return edge_index
 
-def extract_scene_graph(scene, config):
+def extract_scene_graph(scene, config, norm_boxes=False):
     # extract node features
     node_count = len(scene.mobile_objects)
     nodes = torch.zeros((node_count, 4 + config.MAX_CLASSES), dtype=torch.float)
@@ -112,6 +112,12 @@ def extract_scene_graph(scene, config):
         nodes[i, 0:4] = torch.tensor(so.extents, dtype=torch.float) 
         # classification
         nodes[i, 4+config.class_indexes[so.scene_object_type]] = 1.
+
+    if norm_boxes:
+        nodes[i,0] /= config.IMAGE_WIDTH
+        nodes[i,1] /= config.IMAGE_HEIGHT
+        nodes[i,2] /= config.IMAGE_WIDTH
+        nodes[i,3] /= config.IMAGE_HEIGHT
 
     # get fully connected edges
     edge_index = fully_connect(node_count)
@@ -164,7 +170,20 @@ def gen_data_batch(config, encode_fn, batch_sz=32):
     # create a batch
     return Batch.from_data_list(examples)
     
+def gen_scene_example(config, scene, encode_fn):
+    # genrate examples
+    examples = generate_examples(config, scene, max_instances=1)
+    selection_text = examples[0].selection
 
+    # encode sentences
+    encoded_selections = encode_fn([ex.selection for ex in examples])
+    encoded_selections = torch.tensor(encoded_selections)
+    encoded_selections = torch.unsqueeze(encoded_selections, dim=1)
+    for i in range(encoded_selections.shape[0]):
+        examples[i].selection = encoded_selections[i]
+
+    # create a batch
+    return Batch.from_data_list(examples), selection_text
 
 ''' Example data batch generation
 config = Config()

@@ -372,11 +372,19 @@ class Scene(object):
         else:
             return so
 
-    def render(self, draw, withindexes=False, highlight=[]):
+    def render(self, draw, withindexes=False, highlight=[], fails=[]):
         draw.rectangle(self.table_extents, fill='sienna')
         for idx, o in enumerate(self.mobile_objects):
-            outline = 'green' if idx in highlight else 'black'
-            fill = 'green' if idx in highlight else None
+            if idx in highlight:
+                outline = 'green'
+                fill = 'green'
+            elif idx in fails:
+                outline = 'blue' 
+                fill = 'blue' 
+            else:
+                outline = 'black'
+                fill = None
+
             o.draw(draw, outline=outline, fill=fill)
             if withindexes:
                 draw.text(o.get_center(),str(idx),fill='black')

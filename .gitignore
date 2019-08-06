@@ -11,3 +11,4 @@ nlp/glove_load.py
 nlp/glove_text.py
 runs/*
 logs/*
+checkpoints/*
