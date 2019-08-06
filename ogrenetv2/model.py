@@ -21,13 +21,13 @@ class EdgeModel(torch.nn.Module):
         features_in = edge_attr_sz_0 + (2 * node_attr_sz_0) + u_attr_sz_0
         self.edge_mlp = Sequential(
             Linear(features_in, edge_h_sz_0), 
-            ELU(), 
+            ReLU(), 
             Linear(edge_h_sz_0, edge_h_sz_0), 
-            ELU(),
+            ReLU(),
             Linear(edge_h_sz_0, edge_h_sz_0), 
-            ELU(),
+            ReLU(),
             Linear(edge_h_sz_0, edge_h_sz_0), 
-            ELU(),
+            ReLU(),
             Linear(edge_h_sz_0, edge_attr_sz_1)
         )
 
@@ -45,9 +45,9 @@ class NodeModel(torch.nn.Module):
         features_in = edge_attr_sz_1 + node_attr_sz_0
         self.node_mlp_1 = Sequential(
             Linear(features_in, node_h_sz_0), 
-            ELU(), 
+            ReLU(), 
             Linear(node_h_sz_0, node_h_sz_0), 
-            ELU()
+            ReLU()
         )
         features_in = node_attr_sz_0 + node_h_sz_0 + u_attr_sz_0
         self.node_mlp_2 = Sequential(
