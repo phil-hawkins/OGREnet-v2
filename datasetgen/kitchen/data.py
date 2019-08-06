@@ -103,7 +103,7 @@ def fully_connect(node_count):
     edge_index, _ = remove_self_loops(edge_index)
     return edge_index
 
-def extract_scene_graph(scene, config, norm_boxes=False):
+def extract_scene_graph(scene, config, norm_boxes=True):
     # extract node features
     node_count = len(scene.mobile_objects)
     nodes = torch.zeros((node_count, 4 + config.MAX_CLASSES), dtype=torch.float)
