@@ -23,10 +23,38 @@ def git_record():
     git_msg = subprocess.check_output(['git', 'log', '-n 1 --pretty=format:%s HEAD'])
     return git_msg.decode("utf-8")
 
+def flags_text():
+    ignore_flags = [
+        '?',
+        'alsologtostderr',
+        'help',
+        'helpfull',
+        'helpshort',
+        'helpxml',
+        'logtostderr',
+        'log_dir',
+        'only_check_args',
+        'pdb_post_mortem',
+        'profile_file',
+        'run_with_pdb',
+        'run_with_profiling',
+        'showprefixforinfo',
+        'stderrthreshold',
+        'use_cprofile_for_profiling',
+        'v',
+        'verbosity'
+    ]
+    flag_lst = ["{} : {}".format(flag, FLAGS[flag].value) for flag in FLAGS if flag not in ignore_flags]
+    
+    return "\n".join(flag_lst)
+
+def run_settings():
+    return "{}\n{}".format(flags_text(), git_record())
+
 
 def main(_argv):
     writer = SummaryWriter(log_dir="./logs/{}".format(FLAGS.job_id))
-    writer.add_text(tag="git record", text_string=git_record())
+    writer.add_text(tag="Run settings", text_string=run_settings())
     config = Config()
     SceneObject.class_init(config)
 
