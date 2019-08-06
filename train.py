@@ -13,10 +13,10 @@ from ogrenetv2.model import OGRENet
 from ogrenetv2.meter import Meter
 
 flags.DEFINE_integer('train_batches', 200, 'number of training batches')
-flags.DEFINE_integer('eval_batches', 20, 'number of evaluation batches')
 flags.DEFINE_integer('log_step', 10, 'number of training batches')
-flags.DEFINE_float('learning_rate', 1e-3, 'learning rate')
+flags.DEFINE_float('learning_rate', 1e-4, 'learning rate')
 flags.DEFINE_string('job_id', 'testrun', 'job identifier from the batch system.  Used in tagging the logs')
+flags.DEFINE_string('notes', 'experiment notes to log')
 
 
 def git_record():
