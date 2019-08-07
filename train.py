@@ -12,12 +12,20 @@ from datasetgen.kitchen.scene import SceneObject
 from ogrenetv2.model import OGRENet
 from ogrenetv2.meter import Meter
 
-flags.DEFINE_integer('train_batches', 200, 'number of training batches')
+
 flags.DEFINE_integer('log_step', 10, 'number of training batches')
-flags.DEFINE_float('learning_rate', 1e-4, 'learning rate')
 flags.DEFINE_string('job_id', 'testrun', 'job identifier from the batch system.  Used in tagging the logs')
 flags.DEFINE_string('notes', '', 'experiment notes to log')
-
+# Hyper-paramteres
+flags.DEFINE_integer('train_batches', 200, 'number of training batches')
+flags.DEFINE_float('learning_rate', 1e-4, 'learning rate')
+flags.DEFINE_integer('selection_sz', 4096, 'size of selection sentence encoding vector = u_attr_sz')
+flags.DEFINE_integer('u_attr_reduced_sz', 256, 'size of u_attr_sz after dimention reduction')
+flags.DEFINE_integer('edge_h_sz', 1024, 'size of hidden layers in the edge model')
+flags.DEFINE_integer('edge_attr_sz1', 512, 'edge attribute output')
+flags.DEFINE_integer('node_h_sz', 512, 'size of hidden layers in the node model')
+flags.DEFINE_integer('edge_hidden_layers', 3, 'number of hidden layers in the edge model')
+flags.DEFINE_integer('node_hidden_layers', 1, 'number of hidden layers in the node model')
 
 def git_record():
     git_msg = subprocess.check_output(['git', 'log', '-n 1 --pretty=format:%s HEAD'])
@@ -65,7 +73,15 @@ def main(_argv):
     infersent.build_vocab(config.vocab, tokenize=True)
 
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-    model = OGRENet().to(device)
+    model = OGRENet(
+        u_attr_sz=FLAGS.selection_sz, 
+        u_attr_reduced_sz=FLAGS.u_attr_reduced_sz, 
+        edge_h_sz=FLAGS.edge_h_sz, 
+        edge_attr_sz1=FLAGS.edge_attr_sz1, 
+        node_h_sz=FLAGS.node_h_sz, 
+        edge_hidden_layers=FLAGS.edge_hidden_layers, 
+        node_hidden_layers=FLAGS.node_hidden_layers
+    ).to(device)
     #data = dataset[0].to(device)
     optimizer = torch.optim.Adam(model.parameters(), lr=FLAGS.learning_rate, weight_decay=5e-4)
     meter = Meter()
