@@ -1,20 +1,11 @@
 import torch
 from collections import OrderedDict
 from torch.nn import Sequential, Linear, ReLU, Module, ELU
-from torch_scatter import scatter_mean
+from torch_scatter import scatter_mean, scatter_min, scatter_max
 from torch_geometric.nn import MetaLayer
 from torch_geometric.utils import grid, remove_self_loops
 from torch_geometric.data import Data, Batch
 
-# edge_attr_sz_0 = 1
-# node_attr_sz_0 = 4 + 5
-# u_attr_sz_0 = 256
-# edge_attr_sz_1 = 512
-# node_attr_sz_1 = 1
-# u_attr_sz_1 = 1
-
-# edge_h_sz_0 = 1024
-# node_h_sz_0 = 512
 
 class EdgeModel(torch.nn.Module):
     def __init__(self, edge_attr_sz_in, edge_attr_sz_out, edge_h_sz, node_attr_sz, u_attr_sz, hidden_layers=3):
@@ -42,8 +33,10 @@ class EdgeModel(torch.nn.Module):
         return self.edge_mlp(out)
 
 class NodeModel(torch.nn.Module):
-    def __init__(self, node_attr_sz_in, node_attr_sz_out, edge_attr_sz, node_h_sz, u_attr_sz, hidden_layers=1):
+    def __init__(self, node_attr_sz_in, node_attr_sz_out, edge_attr_sz, node_h_sz, u_attr_sz, hidden_layers=1, aggregation="mean"):
         super(NodeModel, self).__init__()
+
+        self.aggregation = aggregation
         features_in = node_attr_sz_in + edge_attr_sz
 
         module_odict = [
@@ -57,7 +50,11 @@ class NodeModel(torch.nn.Module):
 
         self.node_mlp_1 = Sequential(OrderedDict(module_odict))
 
-        features_in = node_attr_sz_in + node_h_sz + u_attr_sz
+        if self.aggregation == "minmax":
+            features_in = node_attr_sz_in + (2 * node_h_sz) + u_attr_sz
+        else:
+            features_in = node_attr_sz_in + node_h_sz + u_attr_sz
+
         self.node_mlp_2 = Sequential(
             Linear(features_in, node_h_sz), 
             ReLU(), 
@@ -73,13 +70,27 @@ class NodeModel(torch.nn.Module):
         row, col = edge_index
         out = torch.cat([x[col], edge_attr], dim=1)
         out = self.node_mlp_1(out)
-        out = scatter_mean(out, row, dim=0, dim_size=x.size(0))
+
+        if self.aggregation == "mean":
+            out = scatter_mean(out, row, dim=0, dim_size=x.size(0))
+        elif self.aggregation == "min":
+            out, _ = scatter_min(out, row, dim=0, dim_size=x.size(0))
+        elif self.aggregation == "max":
+            out, _ = scatter_max(out, row, dim=0, dim_size=x.size(0))
+        elif self.aggregation == "minmax":
+            out = torch.cat([
+                scatter_min(out, row, dim=0, dim_size=x.size(0))[0],
+                scatter_max(out, row, dim=0, dim_size=x.size(0))[0]
+            ], dim=1)
+        else:
+            raise ValueError("Unknown aggregation type: {}".format(self.aggregation)) 
+
         out = torch.cat([x, out, u[batch]], dim=1)
         return self.node_mlp_2(out)
 
 # spatial reasoning
 class OGRENet(torch.nn.Module):
-    def __init__(self, u_attr_sz=4096, u_attr_reduced_sz=256, edge_h_sz=1024, edge_attr_sz1=512, node_h_sz=512, edge_hidden_layers=3, node_hidden_layers=1):
+    def __init__(self, u_attr_sz=4096, u_attr_reduced_sz=256, edge_h_sz=1024, edge_attr_sz1=512, node_h_sz=512, edge_hidden_layers=3, node_hidden_layers=1, node_aggregation="mean"):
         super(OGRENet, self).__init__()
         node_attr_sz_in = 4 + 5
         self.select_dim_reduction = Linear(u_attr_sz, u_attr_reduced_sz)
@@ -98,7 +109,8 @@ class OGRENet(torch.nn.Module):
                 edge_attr_sz=edge_attr_sz1, 
                 node_h_sz=node_h_sz, 
                 u_attr_sz=u_attr_reduced_sz, 
-                hidden_layers=node_hidden_layers), 
+                hidden_layers=node_hidden_layers,
+                aggregation=node_aggregation), 
             None
         ) 
 
