@@ -89,14 +89,14 @@ class NodeModel(torch.nn.Module):
         return self.node_mlp_2(out)
 
 class GlobalModel(torch.nn.Module):
-    def __init__(self, u_attr_sz_in, u_attr_sz_out, node_attr_sz, edge_attr_sz, hidden_sz, mlp_layers):
+    def __init__(self, u_attr_sz_in, u_attr_sz_out, node_attr_sz, hidden_sz, mlp_layers):
         super(GlobalModel, self).__init__()
         mlp_odict = []
         
         for i in range(mlp_layers):
             u_in = u_out = hidden_sz
             if i == 0:
-                u_in = u_attr_sz_in
+                u_in = u_attr_sz_in + node_attr_sz
             if i == (mlp_layers - 1):
                 u_out = u_attr_sz_out
 
@@ -119,6 +119,7 @@ class GlobalModel(torch.nn.Module):
 class OGRENet(torch.nn.Module):
     def __init__(self, u_attr_sz=4096, u_attr_reduced_sz=256, edge_h_sz=1024, edge_attr_sz1=512, node_h_sz=512, 
                 edge_hidden_layers=3, node_hidden_layers=1, 
+                global_h_sz=1024, global_mlp_layers=0,
                 gn_layers=1, gn_node_h_sz=512,
                 node_aggregation="mean"):
         super(OGRENet, self).__init__()
@@ -134,6 +135,15 @@ class OGRENet(torch.nn.Module):
                 edge_attr_sz_in = 1
             if i == (gn_layers - 1):
                 node_attr_sz_out = 1
+            if (global_mlp_layers == 0) or (i == (gn_layers - 1)):
+                global_model = None
+            else:
+                global_model = GlobalModel(
+                    u_attr_sz_in=u_attr_reduced_sz, 
+                    u_attr_sz_out=u_attr_reduced_sz, 
+                    node_attr_sz=node_attr_sz_out, 
+                    hidden_sz=global_h_sz, 
+                    mlp_layers=global_mlp_layers)
 
             self.gn.append(MetaLayer(
                 EdgeModel(
@@ -152,7 +162,7 @@ class OGRENet(torch.nn.Module):
                     u_attr_sz=u_attr_reduced_sz, 
                     hidden_layers=node_hidden_layers,
                     aggregation=node_aggregation), 
-                None
+                global_model
         ))
 
     def forward(self, data):

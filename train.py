@@ -29,6 +29,8 @@ flags.DEFINE_integer('node_hidden_layers', 1, 'number of hidden layers in the no
 flags.DEFINE_enum('node_aggregation', 'mean', ['mean', 'min', 'max', 'minmax'], 'function used to aggreagte node neighbourhood features')
 flags.DEFINE_integer('gn_layers', 1, 'number graph network layers')
 flags.DEFINE_integer('gn_node_h_sz', 512, 'size of a node vector between layers in the graph network')
+flags.DEFINE_integer('global_h_sz', 1024, 'size of hidden layers in the global model')
+flags.DEFINE_integer('global_mlp_layers', 0, 'number of hidden layers in the global model. 0 = no gobal model used.')
 
 def git_record():
     git_msg = subprocess.check_output(['git', 'log', '-n 1 --pretty=format:%s HEAD'])
@@ -84,6 +86,8 @@ def main(_argv):
         node_h_sz=FLAGS.node_h_sz, 
         edge_hidden_layers=FLAGS.edge_hidden_layers, 
         node_hidden_layers=FLAGS.node_hidden_layers,
+        global_h_sz=FLAGS.global_h_sz, 
+        global_mlp_layers=FLAGS.global_mlp_layers,
         gn_layers=FLAGS.gn_layers,
         gn_node_h_sz=FLAGS.gn_node_h_sz,
         node_aggregation=FLAGS.node_aggregation
