@@ -1,6 +1,6 @@
 import torch
 from collections import OrderedDict
-from torch.nn import Sequential, Linear, ReLU, Module, ELU
+from torch.nn import Sequential, ModuleList, Linear, ReLU, Module, ELU
 from torch_scatter import scatter_mean, scatter_min, scatter_max
 from torch_geometric.nn import MetaLayer
 from torch_geometric.utils import grid, remove_self_loops
@@ -90,35 +90,50 @@ class NodeModel(torch.nn.Module):
 
 # spatial reasoning
 class OGRENet(torch.nn.Module):
-    def __init__(self, u_attr_sz=4096, u_attr_reduced_sz=256, edge_h_sz=1024, edge_attr_sz1=512, node_h_sz=512, edge_hidden_layers=3, node_hidden_layers=1, node_aggregation="mean"):
+    def __init__(self, u_attr_sz=4096, u_attr_reduced_sz=256, edge_h_sz=1024, edge_attr_sz1=512, node_h_sz=512, 
+                edge_hidden_layers=3, node_hidden_layers=1, 
+                gn_layers=1, gn_node_h_sz=512,
+                node_aggregation="mean"):
         super(OGRENet, self).__init__()
-        node_attr_sz_in = 4 + 5
+        
         self.select_dim_reduction = Linear(u_attr_sz, u_attr_reduced_sz)
-        self.g1 = MetaLayer(
-            EdgeModel(
-                edge_attr_sz_in=1, 
-                edge_h_sz=edge_h_sz, 
-                edge_attr_sz_out=edge_attr_sz1, 
-                node_attr_sz=node_attr_sz_in, 
-                u_attr_sz=u_attr_reduced_sz, 
-                hidden_layers=edge_hidden_layers
-            ), 
-            NodeModel(
-                node_attr_sz_in=node_attr_sz_in, 
-                node_attr_sz_out=1, 
-                edge_attr_sz=edge_attr_sz1, 
-                node_h_sz=node_h_sz, 
-                u_attr_sz=u_attr_reduced_sz, 
-                hidden_layers=node_hidden_layers,
-                aggregation=node_aggregation), 
-            None
-        ) 
+        self.gn = ModuleList()
+
+        for i in range(gn_layers):
+            node_attr_sz_in = node_attr_sz_out = gn_node_h_sz
+            edge_attr_sz_in = edge_attr_sz1
+            if i == 0:
+                node_attr_sz_in = 4 + 5
+                edge_attr_sz_in = 1
+            if i == (gn_layers - 1):
+                node_attr_sz_out = 1
+
+            self.gn.append(MetaLayer(
+                EdgeModel(
+                    edge_attr_sz_in=edge_attr_sz_in, 
+                    edge_h_sz=edge_h_sz, 
+                    edge_attr_sz_out=edge_attr_sz1, 
+                    node_attr_sz=node_attr_sz_in, 
+                    u_attr_sz=u_attr_reduced_sz, 
+                    hidden_layers=edge_hidden_layers
+                ), 
+                NodeModel(
+                    node_attr_sz_in=node_attr_sz_in, 
+                    node_attr_sz_out=node_attr_sz_out, 
+                    edge_attr_sz=edge_attr_sz1, 
+                    node_h_sz=node_h_sz, 
+                    u_attr_sz=u_attr_reduced_sz, 
+                    hidden_layers=node_hidden_layers,
+                    aggregation=node_aggregation), 
+                None
+        ))
 
     def forward(self, data):
         x, edge_index, edge_attr, u, batch = data.x, data.edge_index, data.edge_attr, data.selection, data.batch
         
         u = self.select_dim_reduction(u)
-        x, edge_attr, u = self.g1(x=x, edge_index=edge_index, edge_attr=edge_attr, u=u, batch=batch)
+        for graph_layer in self.gn:
+            x, edge_attr, u = graph_layer(x=x, edge_index=edge_index, edge_attr=edge_attr, u=u, batch=batch)
 
         return torch.squeeze(x)
 
