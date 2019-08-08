@@ -88,6 +88,33 @@ class NodeModel(torch.nn.Module):
         out = torch.cat([x, out, u[batch]], dim=1)
         return self.node_mlp_2(out)
 
+class GlobalModel(torch.nn.Module):
+    def __init__(self, u_attr_sz_in, u_attr_sz_out, node_attr_sz, edge_attr_sz, hidden_sz, mlp_layers):
+        super(GlobalModel, self).__init__()
+        mlp_odict = []
+        
+        for i in range(mlp_layers):
+            u_in = u_out = hidden_sz
+            if i == 0:
+                u_in = u_attr_sz_in
+            if i == (mlp_layers - 1):
+                u_out = u_attr_sz_out
+
+            mlp_odict.append(("global linear {}".format(i), Linear(u_in, u_out)))
+            if i < (mlp_layers - 1):
+                mlp_odict.append(("global relu {}".format(i), ReLU()))
+            
+        self.global_mlp = Sequential(OrderedDict(mlp_odict))
+
+    def forward(self, x, edge_index, edge_attr, u, batch):
+        # x: [N, F_x], where N is the number of nodes.
+        # edge_index: [2, E] with max entry N - 1.
+        # edge_attr: [E, F_e]
+        # u: [B, F_u]
+        # batch: [N] with max entry B - 1.
+        out = torch.cat([u, scatter_mean(x, batch, dim=0)], dim=1)
+        return self.global_mlp(out)
+
 # spatial reasoning
 class OGRENet(torch.nn.Module):
     def __init__(self, u_attr_sz=4096, u_attr_reduced_sz=256, edge_h_sz=1024, edge_attr_sz1=512, node_h_sz=512, 

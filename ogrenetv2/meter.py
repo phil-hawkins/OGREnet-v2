@@ -1,5 +1,7 @@
 from math import inf
 
+EPSILON = 1e-10
+
 class Meter(object):
 
     def __init__(self):
@@ -54,10 +56,10 @@ class Meter(object):
         return (self.cum_true_pos + self.cum_true_neg) / self.pred_count
 
     def precision(self):
-        return self.cum_true_pos / (self.cum_true_pos + self.cum_false_pos)
+        return self.cum_true_pos / (self.cum_true_pos + self.cum_false_pos + EPSILON)
 
     def recall(self):
-        return self.cum_true_pos / (self.cum_true_pos + self.cum_false_neg)
+        return self.cum_true_pos / (self.cum_true_pos + self.cum_false_neg + EPSILON)
 
     def top1_precision(self):
         return self.top1_true / self.examples
