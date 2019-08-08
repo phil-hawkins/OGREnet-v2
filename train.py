@@ -27,7 +27,7 @@ flags.DEFINE_integer('node_h_sz', 512, 'size of hidden layers in the node model'
 flags.DEFINE_integer('edge_hidden_layers', 3, 'number of hidden layers in the edge model')
 flags.DEFINE_integer('node_hidden_layers', 1, 'number of hidden layers in the node model')
 flags.DEFINE_string('node_aggregation', 'mean', 'function used to aggreagte node neighbourhood features')
-flags.DEFINE_integer('gn_layers', 2, 'number graph network layers')
+flags.DEFINE_integer('gn_layers', 1, 'number graph network layers')
 flags.DEFINE_integer('gn_node_h_sz', 512, 'size of a node vector between layers in the graph network')
 
 def git_record():
