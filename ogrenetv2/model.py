@@ -7,16 +7,25 @@ from torch_geometric.utils import grid, remove_self_loops
 from torch_geometric.data import Data, Batch
 
 
+class Square(Module):
+
+    def __init__(self):
+        super(Square, self).__init__()
+        
+    def forward(self, input):
+        return input * input
+
+
 class EdgeModel(torch.nn.Module):
-    def __init__(self, edge_attr_sz_in, edge_attr_sz_out, edge_h_sz, node_attr_sz, u_attr_sz, hidden_layers=3):
+    def __init__(self, edge_attr_sz_in, edge_attr_sz_out, edge_h_sz, node_attr_sz, u_attr_sz, hidden_layers=3, square=False):
         super(EdgeModel, self).__init__()
         features_in = edge_attr_sz_in + (2 * node_attr_sz) + u_attr_sz
 
         module_odict = [
             ('edge linear 0', Linear(features_in, edge_h_sz)), 
-            ('edge relu 0', ReLU())
+            ('edge relu 0', Square()) if square else ('edge relu 0', ReLU())
         ]
-
+        
         for i in range(hidden_layers):
             module_odict.append(('edge linear {}'.format(i+1), Linear(edge_h_sz, edge_h_sz)))
             module_odict.append(('edge relu {}'.format(i+1), ReLU()))
@@ -130,9 +139,11 @@ class OGRENet(torch.nn.Module):
         for i in range(gn_layers):
             node_attr_sz_in = node_attr_sz_out = gn_node_h_sz
             edge_attr_sz_in = edge_attr_sz1
+            square_edge = False
             if i == 0:
                 node_attr_sz_in = 4 + 5
                 edge_attr_sz_in = 1
+                square_edge = True
             if i == (gn_layers - 1):
                 node_attr_sz_out = 1
             if (global_mlp_layers == 0) or (i == (gn_layers - 1)):
@@ -152,7 +163,8 @@ class OGRENet(torch.nn.Module):
                     edge_attr_sz_out=edge_attr_sz1, 
                     node_attr_sz=node_attr_sz_in, 
                     u_attr_sz=u_attr_reduced_sz, 
-                    hidden_layers=edge_hidden_layers
+                    hidden_layers=edge_hidden_layers,
+                    square=square_edge
                 ), 
                 NodeModel(
                     node_attr_sz_in=node_attr_sz_in, 
