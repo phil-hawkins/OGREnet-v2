@@ -27,6 +27,7 @@ flags.DEFINE_integer('node_h_sz', 512, 'size of hidden layers in the node model'
 flags.DEFINE_integer('edge_hidden_layers', 3, 'number of hidden layers in the edge model')
 flags.DEFINE_integer('node_hidden_layers', 1, 'number of hidden layers in the node model')
 flags.DEFINE_enum('node_aggregation', 'mean', ['mean', 'min', 'max', 'minmax'], 'function used to aggreagte node neighbourhood features')
+flags.DEFINE_enum('edge_act', 'square', ['relu', 'square', 'abs'], 'activation function used in the first layer of the edge model in the first graph pass')
 flags.DEFINE_integer('gn_layers', 1, 'number graph network layers')
 flags.DEFINE_integer('gn_node_h_sz', 512, 'size of a node vector between layers in the graph network')
 flags.DEFINE_integer('global_h_sz', 1024, 'size of hidden layers in the global model')
@@ -90,7 +91,8 @@ def main(_argv):
         global_mlp_layers=FLAGS.global_mlp_layers,
         gn_layers=FLAGS.gn_layers,
         gn_node_h_sz=FLAGS.gn_node_h_sz,
-        node_aggregation=FLAGS.node_aggregation
+        node_aggregation=FLAGS.node_aggregation,
+        edge_act=FLAGS.edge_act
     ).to(device)
     #data = dataset[0].to(device)
     optimizer = torch.optim.Adam(model.parameters(), lr=FLAGS.learning_rate, weight_decay=5e-4)

@@ -1,6 +1,6 @@
 import torch
 from collections import OrderedDict
-from torch.nn import Sequential, ModuleList, Linear, ReLU, Module, ELU
+from torch.nn import Sequential, ModuleList, Linear, ReLU, Module, ELU, BatchNorm1d
 from torch_scatter import scatter_mean, scatter_min, scatter_max
 from torch_geometric.nn import MetaLayer
 from torch_geometric.utils import grid, remove_self_loops
@@ -15,15 +15,29 @@ class Square(Module):
     def forward(self, input):
         return input * input
 
+class Abs(Module):
+
+    def __init__(self):
+        super(Abs, self).__init__()
+        
+    def forward(self, input):
+        return input.abs()
 
 class EdgeModel(torch.nn.Module):
-    def __init__(self, edge_attr_sz_in, edge_attr_sz_out, edge_h_sz, node_attr_sz, u_attr_sz, hidden_layers=3, square=False):
+    def __init__(self, edge_attr_sz_in, edge_attr_sz_out, edge_h_sz, node_attr_sz, u_attr_sz, hidden_layers=3, activation0='relu'):
         super(EdgeModel, self).__init__()
         features_in = edge_attr_sz_in + (2 * node_attr_sz) + u_attr_sz
 
+        act = {
+            'relu': ('edge relu 0', ReLU()),
+            'square': ('edge square 0', Square()),
+            'abs': ('edge abs 0', Abs())
+        }
+
         module_odict = [
-            ('edge linear 0', Linear(features_in, edge_h_sz)), 
-            ('edge relu 0', Square()) if square else ('edge relu 0', ReLU())
+            ('edge linear 0', Linear(features_in, edge_h_sz)),
+            act[activation0],
+            ('batch norm 0', BatchNorm1d(edge_h_sz))
         ]
         
         for i in range(hidden_layers):
@@ -130,7 +144,7 @@ class OGRENet(torch.nn.Module):
                 edge_hidden_layers=3, node_hidden_layers=1, 
                 global_h_sz=1024, global_mlp_layers=0,
                 gn_layers=1, gn_node_h_sz=512,
-                node_aggregation="mean"):
+                node_aggregation="mean", edge_act="square"):
         super(OGRENet, self).__init__()
         
         self.select_dim_reduction = Linear(u_attr_sz, u_attr_reduced_sz)
@@ -139,11 +153,11 @@ class OGRENet(torch.nn.Module):
         for i in range(gn_layers):
             node_attr_sz_in = node_attr_sz_out = gn_node_h_sz
             edge_attr_sz_in = edge_attr_sz1
-            square_edge = False
+            edge_activation0 ='relu'
             if i == 0:
                 node_attr_sz_in = 4 + 5
                 edge_attr_sz_in = 1
-                square_edge = True
+                edge_activation0 = edge_act
             if i == (gn_layers - 1):
                 node_attr_sz_out = 1
             if (global_mlp_layers == 0) or (i == (gn_layers - 1)):
@@ -164,7 +178,7 @@ class OGRENet(torch.nn.Module):
                     node_attr_sz=node_attr_sz_in, 
                     u_attr_sz=u_attr_reduced_sz, 
                     hidden_layers=edge_hidden_layers,
-                    square=square_edge
+                    activation0=edge_activation0
                 ), 
                 NodeModel(
                     node_attr_sz_in=node_attr_sz_in, 
