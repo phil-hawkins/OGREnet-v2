@@ -1,5 +1,5 @@
 # Object Graph Relation Encoding Network 
-# (ORGE-net) - version 2
+# (OGRE-net) - version 2
 
 Consider a domestic robot being asked to pick up ``the cup nearest to the plate''. Natural language is an intuitive way for humans to interact with robots. However, enabling robots to comprehend natural language spatial instructions such as this is challenging because objects in the scene must be identified by a combination of their type, cup, and their relation to other objects, 'nearest to the plate'.
 
